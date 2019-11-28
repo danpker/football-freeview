@@ -13,7 +13,9 @@ soup = BeautifulSoup(data.text, features="html.parser")
 def parse_fixture_list(limit=100):
     """Load and parse the fixture list."""
     fixtures = {}
-    for idx, match_date in enumerate(soup.find_all("div", {"class": "matchdate"})):
+
+    match_dates = soup.find_all("div", {"class": "matchdate"})
+    for idx, match_date in enumerate(match_dates):
         day_fixtures = []
         children = match_date.findParent().next_siblings
         for i in children:
