@@ -10,9 +10,11 @@ data = requests.get(URL)
 soup = BeautifulSoup(data.text, features="html.parser")
 
 
-def print_data(limit=100):
+def parse_fixture_list(limit=100):
+    """Load and parse the fixture list."""
+    fixtures = {}
     for idx, match_date in enumerate(soup.find_all("div", {"class": "matchdate"})):
-        print(match_date.getText())
+        day_fixtures = []
         children = match_date.findParent().next_siblings
         for i in children:
             fixture = i.find_all("div", {"class": "matchfixture"})
@@ -22,16 +24,21 @@ def print_data(limit=100):
             competition = i.find_all("div", {"class": "competition"})
             kickofftime = i.find_all("div", {"class": "kickofftime"})
             channels = i.find_all("div", {"class": "channels"})
-            print("{} - {} - {} - {}".format(
-                fixture[0].getText(),
-                competition[0].getText(),
-                kickofftime[0].getText(),
-                channels[0].getText(),
-            ))
-        print("---")
+
+            day_fixtures.append(
+                (
+                    fixture[0].getText(),
+                    competition[0].getText(),
+                    kickofftime[0].getText(),
+                    channels[0].getText(),
+                )
+            )
+        fixtures[match_date.getText()] = day_fixtures
 
         if idx > limit:
             break
+
+    return fixtures
 
 
 def main():
@@ -39,14 +46,20 @@ def main():
 
     if len(args) <= 1:
         # No args provided so just do the default behaviour.
-        print_data()
+        print(parse_fixture_list())
         return
 
     if args[1] == "bitbar":
         # Being called in BitBar mode, so print a header and limit output.
-        print("F")
+        print("O")
         print("---")
-        print_data(limit=5)
+        all_fixtures = parse_fixture_list(limit=5)
+        for day, fixtures in all_fixtures.items():
+            print(day)
+            for fixture in fixtures:
+                print("{} - {} - {} - {}".format(*fixture))
+            print("---")
+
 
 if __name__ == "__main__":
     main()
